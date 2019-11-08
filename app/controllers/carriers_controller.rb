@@ -8,6 +8,14 @@ class CarriersController < ApplicationController
                 .with_attached_photos
                 .includes(:home_location)
                 .all
+
+    init_filters || return
+    @carriers = @filterrific.find
+
+    respond_to do |format|
+      format.html
+      format.js
+    end
   end
 
   def show
@@ -17,10 +25,12 @@ class CarriersController < ApplicationController
     @carrier = Carrier.new
     @locations = Location.all
     @categories = Category.all
+    authorize @carrier
   end
 
   def create
     @carrier = Carrier.new(carrier_params)
+    authorize @carrier
     @carrier.save
 
     if @carrier.errors.any?
@@ -35,11 +45,12 @@ class CarriersController < ApplicationController
   def edit
     @locations = Location.all
     @categories = Category.all
+    authorize @carrier
   end
 
   def update
+    authorize @carrier
     @carrier.update(carrier_params)
-
     if @carrier.errors.any?
       flash[:errors] = @carrier.errors.full_messages
       redirect_to edit_carrier_path(@carrier)
@@ -51,12 +62,26 @@ class CarriersController < ApplicationController
 
   def destroy
     @carrier = Carrier.find(params[:id])
+    authorize @carrier
     @carrier.destroy
+
     flash[:success] = 'Carrier successfully destroyed'
     redirect_to carriers_path
   end
 
   private
+
+  def init_filters
+    @filterrific = initialize_filterrific(
+      Carrier.includes(:current_location, :category).with_attached_photos,
+      params[:filterrific],
+      select_options: {
+        with_category_id: Carrier::FilterImpl.options_for_category_filter,
+        with_current_location_id: Carrier::FilterImpl.options_for_current_location_filter,
+        with_status: Carrier::FilterImpl.options_for_status_filter
+      }
+    )
+  end
 
   def set_carrier
     @carrier = Carrier.find(params[:id])
@@ -70,10 +95,12 @@ class CarriersController < ApplicationController
       :model,
       :color,
       :size,
+      :safety_link,
       :home_location_id,
       :current_location_id,
       :category_id,
       :default_loan_length_days,
+      :status,
       photos: []
     )
   end

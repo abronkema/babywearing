@@ -1,39 +1,47 @@
 # frozen_string_literal: true
 
 class LocationsController < ApplicationController
-
-  before_action :set_location, only: [:show, :edit, :update]
+  before_action :set_location, only: [:show, :edit, :update, :destroy]
 
   def index
     @locations = Location.all
   end
 
   def show
-   
   end
 
   def new
-    @location = Location.new
+    @location = authorize Location.new
   end
-  
+
   def create
     @location = Location.new(location_params)
-    @location.save
-    redirect_to location_path(@location)
+    authorize @location
+
+    if @location.save
+      redirect_to location_path(@location), notice: 'Location was successfully created.'
+    else
+      render 'new'
+    end
   end
 
-  def edit 
-
+  def edit
   end
 
   def update
-    @location.update(location_params) 
-    redirect_to location_path(@location)
+    authorize @location
+
+    if @location.update(location_params)
+      redirect_to location_path(@location), notice: 'Location was successfully updated.'
+    else
+      render 'edit'
+    end
   end
 
   def destroy
-    Location.find(params[:id]).destroy
-    redirect_to locations_path
+    authorize @location
+
+    redirect_to locations_path, alert: 'Location was successfully destroyed.' if @location.destroy
   end
 
   private
@@ -45,5 +53,4 @@ class LocationsController < ApplicationController
   def set_location
     @location = Location.find(params[:id])
   end
-
 end

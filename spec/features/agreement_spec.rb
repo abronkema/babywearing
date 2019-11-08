@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.feature 'create an agreement', type: :feature do
-  let(:user) { users(:user) }
+  let(:user) { users(:admin) }
   let(:agreement) { agreements(:agreement) }
 
-  before :each do
+  before do
     visit "/"
     sign_in user
   end
@@ -33,7 +33,7 @@ RSpec.feature 'create an agreement', type: :feature do
     fill_in 'Content', with: 'Content of Fake agreement'
     click_on 'Update Agreement'
 
-    expect(page).to have_content('agreement was successfully updated.')
+    expect(page).to have_content('Agreement was successfully updated.')
     expect(page).to have_content('Fake agreement')
     expect(page).to have_content('Content of Fake agreement')
   end
@@ -41,8 +41,8 @@ RSpec.feature 'create an agreement', type: :feature do
   scenario 'DESTROY when delete button is clicked' do
     visit agreements_path
     click_link 'Destroy'
-  
-    expect(page).to have_content('agreement was successfully destroyed.')
+
+    expect(page).to have_content('Agreement was successfully destroyed.')
   end
 
   scenario 'CREATE when title is NOT given' do
@@ -66,5 +66,4 @@ RSpec.feature 'create an agreement', type: :feature do
 
     expect(page).to have_content('Agreement was successfully created.')
   end
-
 end

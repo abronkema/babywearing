@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Carrier < ApplicationRecord
+  include Carrier::FilterImpl
+
   belongs_to :home_location, class_name: 'Location'
   belongs_to :current_location, class_name: 'Location'
   has_many :loans
@@ -18,9 +20,13 @@ class Carrier < ApplicationRecord
 
   has_many_attached :photos
 
+  enum status: %i[available unavailable disabled sold]
+
+  alias available_for_checkout? available?
+
   def build_loan(attributes = {})
     loans.create({
-      due_date: Date.today + default_loan_length_days.days,
+      due_date: Date.today + default_loan_length_days.days
     }.merge(attributes))
   end
 end

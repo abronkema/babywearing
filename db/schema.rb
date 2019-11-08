@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_10_16_053330) do
+ActiveRecord::Schema.define(version: 2019_11_03_121749) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -56,15 +56,10 @@ ActiveRecord::Schema.define(version: 2019_10_16_053330) do
     t.integer "category_id"
     t.bigint "home_location_id", null: false
     t.bigint "current_location_id", null: false
+    t.string "safety_link"
+    t.integer "status", default: 0, null: false
     t.index ["current_location_id"], name: "index_carriers_on_current_location_id"
     t.index ["home_location_id"], name: "index_carriers_on_home_location_id"
-  end
-
-  create_table "carts", force: :cascade do |t|
-    t.integer "member_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "volunteer_id"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -84,11 +79,17 @@ ActiveRecord::Schema.define(version: 2019_10_16_053330) do
   end
 
   create_table "loans", force: :cascade do |t|
-    t.integer "cart_id"
     t.integer "carrier_id"
     t.date "due_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "checkin_volunteer_id"
+    t.bigint "checkout_volunteer_id"
+    t.bigint "member_id", null: false
+    t.datetime "returned_at"
+    t.index ["checkin_volunteer_id"], name: "index_loans_on_checkin_volunteer_id"
+    t.index ["checkout_volunteer_id"], name: "index_loans_on_checkout_volunteer_id"
+    t.index ["member_id"], name: "index_loans_on_member_id"
   end
 
   create_table "locations", force: :cascade do |t|
@@ -135,13 +136,16 @@ ActiveRecord::Schema.define(version: 2019_10_16_053330) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "full_name", null: false
     t.string "street_address", null: false
     t.string "street_address_second"
     t.string "city", null: false
     t.string "state", null: false
     t.string "postal_code", null: false
     t.string "phone_number", null: false
+    t.datetime "deactivated_at"
+    t.string "first_name"
+    t.string "last_name"
+    t.index ["deactivated_at"], name: "index_users_on_deactivated_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -157,4 +161,7 @@ ActiveRecord::Schema.define(version: 2019_10_16_053330) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "carriers", "locations", column: "current_location_id"
   add_foreign_key "carriers", "locations", column: "home_location_id"
+  add_foreign_key "loans", "users", column: "checkin_volunteer_id"
+  add_foreign_key "loans", "users", column: "checkout_volunteer_id"
+  add_foreign_key "loans", "users", column: "member_id"
 end

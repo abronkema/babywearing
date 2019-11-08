@@ -3,7 +3,6 @@
 class AgreementsController < ApplicationController
   before_action :set_agreement, only: [:show, :edit, :update, :destroy]
 
-
   def index
     @agreements = Agreement.all
   end
@@ -13,48 +12,41 @@ class AgreementsController < ApplicationController
   end
 
   def new
-    @agreement = Agreement.new
+    @agreement = authorize Agreement.new
   end
 
   def create
-    @agreement = Agreement.new(agreement_params)
+    @agreement = authorize Agreement.new(agreement_params)
 
-    respond_to do |format|
-      if @agreement.save
-        format.html { redirect_to @agreement, notice: 'Agreement was successfully created.' }
-        format.json { render :show, status: :created, location: @agreement }
-      else
-        format.html { render :new }
-        format.json { render json: @agreement.errors, status: :unprocessable_entity }
-      end
+    if @agreement.save
+      redirect_to @agreement, notice: 'Agreement was successfully created.'
+    else
+      render :new
     end
   end
 
-  def edit 
-
+  def edit
   end
 
   def update
-    respond_to do |format|
-      if @agreement.update(agreement_params)
-        format.html { redirect_to @agreement, notice: 'agreement was successfully updated.' }
-        format.json { render :show, status: :ok, location: @agreement }
-      else
-        format.html { render :edit }
-        format.json { render json: @agreement.errors, status: :unprocessable_entity }
-      end
+    authorize @agreement
+
+    if @agreement.update(agreement_params)
+      redirect_to @agreement, notice: 'Agreement was successfully updated.'
+    else
+      render :edit
     end
   end
 
   def destroy
-    @agreement.destroy
-    respond_to do |format|
-      format.html { redirect_to agreements_url, notice: 'agreement was successfully destroyed.' }
-      format.json { head :no_content }
+    authorize @agreement
+
+    if @agreement.destroy
+      redirect_to agreements_url, alert: 'Agreement was successfully destroyed.'
     end
   end
 
-  private 
+  private
 
   def set_agreement
     @agreement = Agreement.find(params[:id])

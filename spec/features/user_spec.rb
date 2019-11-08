@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe "User" do
+RSpec.describe User do
   let(:admin) { users(:admin) }
   let(:volunteer) { users(:volunteer) }
   let(:member) { users(:member) }
@@ -76,10 +76,11 @@ RSpec.describe "User" do
   scenario "should send the user a welcome email" do
     Devise.mailer.deliveries = []
 
-    user = User.create(
+    user = described_class.create(
       email: "alicia@test.com",
       password: "123abc",
-      full_name: "Alicia Barrett",
+      first_name: "Alicia",
+      last_name: "Barrett",
       street_address: "123 street",
       city: "Atlanta",
       state: "GA",
@@ -92,5 +93,27 @@ RSpec.describe "User" do
       expect(Devise.mailer.deliveries.first.subject).to eq "Babywearing Account Registration"
       expect(Devise.mailer.deliveries.first.to).to include(user.email)
     end
+  end
+
+  scenario 'should allow an admin to activate and deactivate a user' do
+    sign_in admin
+    visit users_url
+
+    deactive_links  = all('a').select { |l| l.text == "Deactivate" }
+    activated_links = all('a').select { |l| l.text == "Activate" }
+    expect(deactive_links.count).to eq(4)
+    expect(activated_links.count).to eq(0)
+
+    all('a').select { |l| l.text == "Deactivate" }.last.click
+    deactive_links   = all('a').select { |l| l.text == "Deactivate" }
+    activated_links  = all('a').select { |l| l.text == "Activate" }
+    expect(deactive_links.count).to eq(3)
+    expect(activated_links.count).to eq(1)
+
+    all('a').select { |l| l.text == "Activate" }.last.click
+    deactive_links  = all('a').select { |l| l.text == "Deactivate" }
+    activated_links = all('a').select { |l| l.text == "Activate" }
+    expect(deactive_links.count).to eq(4)
+    expect(activated_links.count).to eq(0)
   end
 end
